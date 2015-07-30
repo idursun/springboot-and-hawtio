@@ -17,7 +17,7 @@
         <java.version>1.7</java.version>
         <version.compiler.plugin>2.3.1</version.compiler.plugin>
         <spring.boot-version>1.2.5.RELEASE</spring.boot-version>
-        <camel-version>2.15.0</camel-version>
+        <camel-version>2.15.2</camel-version>
         <hawtio.version>2.0.0</hawtio.version>
     </properties>
     <dependencies>
@@ -94,7 +94,29 @@
 
         <dependency>
             <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring</artifactId>
+            <version>${camel-version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
             <artifactId>camel-metrics</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-couchdb</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-mongodb</artifactId>
+            <version>${camel-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-elasticsearch</artifactId>
             <version>${camel-version}</version>
         </dependency>
 
