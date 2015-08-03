@@ -27,7 +27,7 @@ public class SplittingAndAggregatingRouteBuilder extends RouteBuilder {
 
 
         from("timer://timer1?period=200&daemon=false").routeId("splitting-listings")
-                .setHeader(TOTAL_LISTINGS, simple("${body.size}"))
+                .setHeader(TOTAL_LISTINGS, simple("${body.size}++"))
                 .split(body()).streaming()
                 .setHeader(Exchange.HTTP_METHOD, constant("GET"))
                 .recipientList(simple("http://listing/${body}"))
@@ -45,6 +45,10 @@ public class SplittingAndAggregatingRouteBuilder extends RouteBuilder {
                         if (exchange == null) {
                             exchange = incomingExchange;
                         }
+                        if (exchange.getIn().getHeader(TOTAL_LISTINGS) == null) {
+                            Integer total = incomingExchange.getIn().getHeader(TOTAL_LISTINGS, Integer.class);
+                            exchange.getIn().setHeader(TOTAL_LISTINGS, total);
+                        }
 
                         ProductWithListings productWithListings = exchange.getIn().getBody(ProductWithListings.class);
                         if (productWithListings == null) {
@@ -55,27 +59,12 @@ public class SplittingAndAggregatingRouteBuilder extends RouteBuilder {
                             productWithListings.setProduct(incomingExchange.getIn().getBody(Product.class));
                         } else {
                             productWithListings.getListings().add(incomingExchange.getIn().getBody(Listing.class));
-                            if (exchange.getIn().getHeader(TOTAL_LISTINGS) == null) {
-                                exchange.getIn().setHeader(TOTAL_LISTINGS, incomingExchange.getIn().getHeader(TOTAL_LISTINGS));
-                            }
-                        }
-
-                        Integer left = exchange.getIn().getHeader(TOTAL_LISTINGS, Integer.class);
-                        if (left != null) {
-                            left = left -1;
-                            if (left > 0) {
-                                exchange.getIn().setHeader(TOTAL_LISTINGS, left);
-                            }
-
-                            if (left <= 0 && productWithListings.getProduct() != null) {
-                                exchange.getIn().setHeader(Exchange.BATCH_COMPLETE, Boolean.TRUE);
-                            }
                         }
 
                         exchange.getIn().setBody(productWithListings);
                         return exchange;
                     }
-                }).completionPredicate(header(Exchange.BATCH_COMPLETE).isEqualTo(Boolean.TRUE))
+                }).completionSize(header(TOTAL_LISTINGS))
                 .to("couchdb:{{couchdb.url}}");
 
     }

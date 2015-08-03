@@ -1,7 +1,9 @@
 package com.idursun.camel.test;
 
 import com.idursun.camel.routes.SplittingAndAggregatingRouteBuilder;
+import com.idursun.camel.routes.utils.ProductWithListings;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -65,6 +67,12 @@ public class SplittingAndAggregatingRouteTests extends RouteTestBase {
         template.sendBody("direct:listings", Arrays.asList("LIST1", "LIST2"));
 
         aggregatedMockEndPoint.assertIsSatisfied();
+
+        Exchange exchange = aggregatedMockEndPoint.getReceivedExchanges().get(0);
+        ProductWithListings productWithListings = exchange.getIn().getBody(ProductWithListings.class);
+
+        assertListSize(productWithListings.getListings(), 2);
+        assertNotNull(productWithListings.getProduct());
 
         context.stop();
 
