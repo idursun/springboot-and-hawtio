@@ -3,6 +3,7 @@ package com.idursun.camel.test;
 import com.idursun.camel.routes.CouchDbGeneratorRouteBuilder;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
+import org.junit.Before;
 import org.junit.Test;
 
 public class CouchDbGeneratorRouteTest extends RouteTestBase {
@@ -12,9 +13,15 @@ public class CouchDbGeneratorRouteTest extends RouteTestBase {
         return new CouchDbGeneratorRouteBuilder();
     }
 
+    @Before
+    public void createAdviseWithRouteBuilder() throws Exception {
+    }
+
     @Override
-    public AdviceWithRouteBuilder createAdviseWithRouteBuilder() {
-        return new AdviceWithRouteBuilder() {
+    public void createAdviseWithRouteBuilders() {
+
+        customizeRoute("couchdb-producer", new AdviceWithRouteBuilder() {
+
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:input");
@@ -22,7 +29,8 @@ public class CouchDbGeneratorRouteTest extends RouteTestBase {
                         .skipSendToOriginalEndpoint()
                         .to("mock:couchdb");
             }
-        };
+        });
+
     }
 
     @Test

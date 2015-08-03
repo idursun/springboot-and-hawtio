@@ -1,16 +1,16 @@
 package com.idursun.camel.routes;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
+@Component
 public class CouchDbGeneratorRouteBuilder extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
         from("timer://timer1?period=200&daemon=false").routeId("couchdb-producer").
                 setBody().simple("{ groupid: ${bean:randomGroupGenerator.next} }").
-                to("mock:couchdb:{{couchdb.url}}");
+                to("couchdb:{{couchdb.url}}");
 
     }
 }

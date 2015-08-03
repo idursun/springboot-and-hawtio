@@ -2,6 +2,7 @@ package com.idursun.camel.test;
 
 import com.idursun.camel.config.RoutesConfig;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.model.RouteDefinition;
 import org.apache.camel.spring.boot.CamelAutoConfiguration;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Before;
@@ -11,8 +12,11 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.io.support.ResourcePropertySource;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public abstract class RouteTestBase extends CamelSpringTestSupport {
+
+    private HashMap<String,AdviceWithRouteBuilder> routeBuilderAdviceList = new HashMap<>();
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
@@ -26,13 +30,23 @@ public abstract class RouteTestBase extends CamelSpringTestSupport {
         return applicationContext;
     }
 
-    public abstract AdviceWithRouteBuilder createAdviseWithRouteBuilder();
+    public abstract void createAdviseWithRouteBuilders();
+
+    protected void customizeRoute(String routeId, AdviceWithRouteBuilder adviceWithRouteBuilder) {
+        assert adviceWithRouteBuilder != null;
+        routeBuilderAdviceList.put(routeId, adviceWithRouteBuilder);
+    }
 
     @Before
-    public void mockEndpoints() throws Exception{
-        AdviceWithRouteBuilder adviseWithRouteBuilder = createAdviseWithRouteBuilder();
-        if (adviseWithRouteBuilder != null) {
-            context.getRouteDefinitions().get(0).adviceWith(context, adviseWithRouteBuilder);
+    public void applyAdviseWithRouteBuilder() throws Exception {
+        createAdviseWithRouteBuilders();
+
+        for (String routeId : routeBuilderAdviceList.keySet()) {
+            RouteDefinition routeDefinition = context.getRouteDefinition(routeId);
+            if (routeDefinition == null)
+                continue;
+
+            routeDefinition.adviceWith(context, routeBuilderAdviceList.get(routeDefinition.getId()));
         }
     }
 
